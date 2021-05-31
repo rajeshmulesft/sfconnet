@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns:sap="http://www.mulesoft.org/schema/mule/sap"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/sap http://www.mulesoft.org/schema/mule/sap/current/mule-sap.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="4831636e-665d-4724-b8a8-2dd67c26f90c" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="fb40e198-38d4-4501-bef8-0d4d3b6c3cbc" >
+		<salesforce:basic-connection username="${secure::sf.username}" password="${secure::sf.password}" securityToken="${secure::sf.token}"/>
+	</salesforce:sfdc-config>
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="cfb30550-4f96-44c5-b797-3307d5ccb17b" file="test.properties" key="1234567891011121" />
+	<configuration-properties doc:name="Configuration properties" doc:id="b9e1ef2d-c5d1-4d38-8b35-1465ef228a30" file="test.properties" />
+	<flow name="sfconnectFlow" doc:id="a77a221c-76c7-4ec9-a457-8164dcad93c4" >
+		<http:listener doc:name="Listener" doc:id="ea14a72b-896f-4c8b-b41e-a1716fa17e7b" config-ref="HTTP_Listener_config" path="/test"/>
+		<logger level="INFO" doc:name="Logger" doc:id="278de36b-e4ee-4d1e-a9f8-c01cb1b98d69" />
+		<salesforce:query doc:name="Query" doc:id="0d7a5392-7982-4eb3-8745-017c41af3c68" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[SELECT FIRSTNAME,LASTNAME,ID,PHONE,EMAIL from Contact]]></salesforce:salesforce-query>
+		</salesforce:query>
+		<ee:transform doc:name="Transform Message" doc:id="02cd9a25-8281-478b-8edf-e6d3545e05bf" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="2052ea6b-a79f-4519-bb00-8dc0c43163b2" />
+	</flow>
+</mule>
